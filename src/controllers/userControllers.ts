@@ -1,5 +1,8 @@
 import { RequestHandler } from "express";
 import { db, authenticate } from "../db/index";
+import { transporter } from "../mail/client";
+import { passwordResetEmail } from "../mail/templates";
+
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import {
@@ -136,12 +139,12 @@ export const passwordReset: RequestHandler = async (req, res, next) => {
         .update({ password: hashedPassword });
       res.json({ message: "Password updated" });
 
-      // await transporter.sendMail({
-      //   from: '"24Gossip" <info@24Gossip.se>',
-      //   to: email,
-      //   subject: "New temporary password till 24Gossip!",
-      //   html: passwordResetEmail(password),
-      // });
+      await transporter.sendMail({
+        from: '"Enoki" <info@enoki.se>',
+        to: email,
+        subject: "New temporary password till Enoki.se!",
+        html: passwordResetEmail(password),
+      });
     } else {
       // throw new InvalidResetPassword();
     }

@@ -26,7 +26,8 @@ export const createId = () => {
 };
 
 export const createTemporaryPassword = () => {
-  return "grillkorv";
+  // return "grillkorv";
+  return generateString(9);
   // return randomstring.generate(10);
 };
 
@@ -43,4 +44,15 @@ export const actionCodeSettings = {
   // },
   // FDL custom domain.
   // dynamicLinkDomain: 'gossip24.page.link',
+};
+
+const generateString = (length: number) => {
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
 };
