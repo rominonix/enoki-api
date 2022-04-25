@@ -13,15 +13,49 @@ import {
   actionCodeSettings,
 } from "../utils";
 
-export const getUser: RequestHandler = async (req, res) => {
-  const { email } = req.body;
+// export const getUser: RequestHandler = async (req, res) => {
+//   const { email } = req.body;
+//   try {
+//     const querySnapshot = await db.collection("users").doc(email).get();
+//     res.json({ users: querySnapshot.data() });
+//   } catch (error) {
+//     res.json({ error });
+//   }
+// };
+
+export const getUser: RequestHandler = async (req, res, next) => {
   try {
-    const querySnapshot = await db.collection("users").doc(email).get();
+    const querySnapshot = await db
+      .collection("users")
+      //@ts-ignore
+      .doc(req.user.email)
+      .get();
+    // if (!querySnapshot.data()) {
+    //   throw new UserNotFound();
+    // }
     res.json({ users: querySnapshot.data() });
   } catch (error) {
-    res.json({ error });
+    next(error);
   }
 };
+
+// export const getUser: RequestHandler = async (req, res, next) => {
+//   try {
+//     const querySnapshot = await db
+//       .collection("users")
+//       //@ts-ignore
+//       .doc(req.user.email)
+//       .get();
+//     // if (!querySnapshot.data()) {
+//     //   throw new UserNotFound();
+//     // }
+//     console.log( querySnapshot);
+    
+//     res.json({ users: querySnapshot.data() });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 export const registerUser: RequestHandler = async (req, res) => {
   try {
@@ -198,3 +232,54 @@ export const deleteUser: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+// export const addImage: RequestHandler =async (req, res, next) => {
+//   try {
+//     // const { id } = req.params
+//     const file = req.files.pictures
+//     // if (!file) {
+//     //     throw new InvalidBody(['file'])
+//     // }
+
+//     // const findTask = await Task.findOne({ where: { id } })
+//     // if (!findTask) { throw new TaskNotFound(id) }
+//     const extension = path.extname(file.name)
+//     const newFileName = uuid() + extension
+//     const outputPath = path.join("upload_images", newFileName)
+
+//     file.mv(outputPath, (err) => {
+//         if (err) return res.status(500).send(err)
+//         // Task.update(
+//         //     { imageName: newFileName },
+//         //     { where: { id } }
+//         // );
+//         res.json({ message: 'image has added!' })
+//     })
+// } catch (error) { next(error) }
+// }
+
+
+// async addImage(req, res, next) {
+//   try {
+//       const { id } = req.params
+//       const file = req.files.pictures
+//       if (!file) {
+//           throw new InvalidBody(['file'])
+//       }
+
+//       const findTask = await Task.findOne({ where: { id } })
+//       if (!findTask) { throw new TaskNotFound(id) }
+//       const extension = path.extname(file.name)
+//       const newFileName = uuid() + extension
+//       const outputPath = path.join("upload_images", newFileName)
+
+//       file.mv(outputPath, (err) => {
+//           if (err) return res.status(500).send(err)
+//           Task.update(
+//               { imageName: newFileName },
+//               { where: { id } }
+//           );
+//           res.json({ message: 'image has added!' })
+//       })
+//   } catch (error) { next(error) }
+// },
