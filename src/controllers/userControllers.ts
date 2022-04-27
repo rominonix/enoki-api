@@ -13,6 +13,11 @@ import {
   actionCodeSettings,
 } from "../utils";
 
+import path from "path";
+// import fileUpload from 'express-fileupload';
+
+import { v4 as uuidv4 } from "uuid";
+
 // export const getUser: RequestHandler = async (req, res) => {
 //   const { email } = req.body;
 //   try {
@@ -50,7 +55,7 @@ export const getUser: RequestHandler = async (req, res, next) => {
 //     //   throw new UserNotFound();
 //     // }
 //     console.log( querySnapshot);
-    
+
 //     res.json({ users: querySnapshot.data() });
 //   } catch (error) {
 //     next(error);
@@ -127,7 +132,7 @@ export const signInWithEmailAndPassword: RequestHandler = async (
       const token = jwt.sign(payload, process.env.JWT_SECRET);
       res.json({ token, user });
     } else {
-      res.json({message: "Invalid credentials"})
+      res.json({ message: "Invalid credentials" });
     }
   } catch (error) {
     res.json({ error });
@@ -193,7 +198,7 @@ export const updateUser: RequestHandler = async (req, res, next) => {
   //@ts-ignore
   const user = req.user as User;
   const hashedPassword = await hashPassword(password);
- 
+
   if (req.body.password) {
     await db
       .collection("users")
@@ -202,13 +207,9 @@ export const updateUser: RequestHandler = async (req, res, next) => {
     res.json({ message: "Password updated" });
   }
 
-  if(req.body.name){
-    await db
-    .collection("users")
-    .doc(user.email)
-    .update({ name: name });
-  res.json({ message: "Name updated" });
-
+  if (req.body.name) {
+    await db.collection("users").doc(user.email).update({ name: name });
+    res.json({ message: "Name updated" });
   }
   const checkEmail = await checkEmailExists(req.body.email);
   if (checkEmail === true) {
@@ -233,53 +234,71 @@ export const deleteUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-// export const addImage: RequestHandler =async (req, res, next) => {
+export const addImageAndDescription: RequestHandler = async (req, res, next) => {
+  try {
+    let { id } = req.params;
+    let imgId = uuidv4()
+    let { name, description } = req.body;
+    await db.collection("mushrooms").doc(name).set({
+      id: imgId,
+      userId: id,
+      name: name,
+      description: description,
+      images: ["ajajaj.png"]
+    });
+
+    res.json({ message: "mushroom successfully created!" });
+
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+// export const addImage: RequestHandler = async (req, res, next) => {
 //   try {
+
+//     let sampleFile;
+//     let uploadPath;
+
+//     if (!req.files || Object.keys(req.files).length === 0) {
+//       return res.status(400).send('No files were uploaded.');
+//     }
+
+//     // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+//     sampleFile = req.files.sampleFile;
+//     uploadPath = __dirname + '/somewhere/on/your/server/' + sampleFile.name;
+
+//     // Use the mv() method to place the file somewhere on your server
+//     sampleFile.mv(uploadPath, function(err) {
+//       if (err)
+//         return res.status(500).send(err);
+
+//       res.json({message: 'File uploaded!'});
+//     });
 //     // const { id } = req.params
-//     const file = req.files.pictures
+//     // const file = req.files.pic
 //     // if (!file) {
 //     //     throw new InvalidBody(['file'])
 //     // }
 
 //     // const findTask = await Task.findOne({ where: { id } })
 //     // if (!findTask) { throw new TaskNotFound(id) }
-//     const extension = path.extname(file.name)
-//     const newFileName = uuid() + extension
-//     const outputPath = path.join("upload_images", newFileName)
-
-//     file.mv(outputPath, (err) => {
-//         if (err) return res.status(500).send(err)
-//         // Task.update(
-//         //     { imageName: newFileName },
-//         //     { where: { id } }
-//         // );
-//         res.json({ message: 'image has added!' })
-//     })
-// } catch (error) { next(error) }
-// }
-
-
-// async addImage(req, res, next) {
-//   try {
-//       const { id } = req.params
-//       const file = req.files.pictures
-//       if (!file) {
-//           throw new InvalidBody(['file'])
-//       }
-
-//       const findTask = await Task.findOne({ where: { id } })
-//       if (!findTask) { throw new TaskNotFound(id) }
-//       const extension = path.extname(file.name)
-//       const newFileName = uuid() + extension
-//       const outputPath = path.join("upload_images", newFileName)
-
-//       file.mv(outputPath, (err) => {
-//           if (err) return res.status(500).send(err)
-//           Task.update(
-//               { imageName: newFileName },
-//               { where: { id } }
-//           );
-//           res.json({ message: 'image has added!' })
-//       })
-//   } catch (error) { next(error) }
-// },
+//     //@ts-ignore
+//     // const extension = path.extname(req.files.image.name);
+//     // const newFileName = uuidv4() + extension;
+//     //@ts-ignore
+//     // req.files.image.mv(path.join('uploads', newFileName))
+//     // const outputPath = path.join("upload_images", newFileName);
+//     // file.mv(outputPath, (err) => {
+//     //   if (err) return res.status(500).send(err);
+//       // Task.update(
+//       //     { imageName: newFileName },
+//       //     { where: { id } }
+//       // );
+//       // res.json({ message: "image has added!" });
+//     // });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
