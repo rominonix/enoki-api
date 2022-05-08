@@ -12,7 +12,7 @@ import fileUpload from 'express-fileupload';
 
 const app = express();
 app.use(express.json());
-app.use( fileUpload())
+app.use(fileUpload())
 app.use("/api/", userRouter);
 // app.use('/api/mail', auth, mailRouter)
 const PORT = process.env.PORT;

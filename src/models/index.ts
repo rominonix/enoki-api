@@ -10,5 +10,13 @@ export interface User {
     // dob: Dob;
     // gender: string;
   }
+
+
+  export interface ImageI {
+    id: string,
+    title: string,
+    description: string,
+    img: object
+  }
   
  
