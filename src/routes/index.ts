@@ -10,7 +10,8 @@ userRouter.post("/login", userController.signInWithEmailAndPassword); // need au
 // userRouter.delete("/deleteuser", userController.deleteUser); // need auth
 userRouter.post("/passwordreset", userController.passwordReset)
 userRouter.post("/image", auth,  userController.addTitleAndDescription)
-// userRouter.post("/:id/nuevaimagen", auth,  userController.addNewImage)
+userRouter.get("/images", auth,  userController.getUserImages)
+// userRouter.get("/hoguis", userController.getMushrooms )
 
 // userRouter.put("/update", auth, userController.updateUser); // need auth
 

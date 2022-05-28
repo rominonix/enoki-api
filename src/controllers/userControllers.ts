@@ -13,7 +13,8 @@ import {
 } from "../utils";
 
 import { v4 as uuidv4 } from "uuid";
-// import { ImageI } from "../models";
+import { url } from "inspector";
+
 
 // export const getUser: RequestHandler = async (req, res) => {
 //   const { email } = req.body;
@@ -214,12 +215,10 @@ export const deleteUser: RequestHandler = async (req, res, next) => {
 };
 
 export const addTitleAndDescription: RequestHandler = async ( req, res, next ) => {
-  // console.log(req)
+
   let img = req.files.image;
   //@ts-ignore
   const userId = req.user.id
-  //@ts-ignore
-  
 
   try {
     let imgName = uuidv4();
@@ -244,8 +243,8 @@ export const addTitleAndDescription: RequestHandler = async ( req, res, next ) =
     //@ts-ignore
     blobStream.end(img.data);
 
-    console.log("Writing to mushroom collection")
-    console.log(title,description, )
+    // console.log("Writing to mushroom collection")
+    // console.log(title,description, )
     const response = await db
       .collection("mushrooms")
       .doc(title)
@@ -256,7 +255,7 @@ export const addTitleAndDescription: RequestHandler = async ( req, res, next ) =
         description: description,
         images: [imgName], // images: [...images, newImg]
       });
-//@ts-ignore
+    //@ts-ignore
     console.log(response.data);
 
     res.json({ message: "mushroom successfully created!" });
@@ -265,95 +264,87 @@ export const addTitleAndDescription: RequestHandler = async ( req, res, next ) =
   }
 };
 
-// export const addTitleAndDescription: RequestHandler = async ( req, res, next ) => {
-//   // let img = req.files.image;
-//   try {
-//     // let imgName = uuidv4();
-//     let docId = uuidv4();
-//     let { id } = req.params;
-//     let { title, description } = req.body;
-//     // let fileUpload = bucket.file(imgName);
-//     // const blobStream = fileUpload.createWriteStream({
-//     //   metadata: {
-//     //     //@ts-ignore
-//     //     contentType: img.mimetype,
-//     //   },
-//     // });
+export const getMushrooms: RequestHandler =async (req, res, next) => {
+  console.log(req);
+  
+  console.log("holi");
 
-//     // blobStream.on("error", (error) => {
-//     //   console.log("Something is wrong! Unable to upload at the moment.");
-//     // });
+  try {
+    //@ts-ignore
+    let userId = req.user.id
 
-//     // blobStream.on("finish", () => {
-//     //   console.log("Finished");
-//     // });
-//     // //@ts-ignore
-//     // blobStream.end(img.data);
+    // console.log(userId);
+    
+    const querySnapshot = await db
+      .collection("mushrooms").get();
+    // if (!querySnapshot.data()) {
+    //   throw new UserNotFound();
+    // }
 
-//     const response = await db
-//       .collection("mushrooms")
-//       .doc(title)
-//       .set({
-//         id: docId,
-//         userId: id,
-//         title: title,
-//         description: description,
-//         images: [], // images: [...images, newImg]
-//       });
-// //@ts-ignore
-//     console.log(response.data);
+    // console.log(querySnapshot);
+    
+    res.json({ mushrooms: querySnapshot});
 
-//     res.json({ message: "mushroom successfully created!" });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+  } catch (error) {
+    next(error);
+  }
+}
 
-// el ID de la Imagen debe venir del titilo y la descripcion en esa funcion se crea el documento en la coleccion, tiene
-// una lista vacia de imagenes y con la funcion de abajo ese array se deberia llenar 
+export const getUserImages: RequestHandler = async (req, res, next) => {
+  // const config = {
+  //   action: 'read',
+  //   expires: '03-17-2025'
+  // };
 
+  const urlOptions = {
+    version: "v4",
+    action: "read",
+    expires: Date.now() + 1000 * 60 * 2, // 2 minutes
+  }
 
-// export const addNewImage: RequestHandler = async ( req, res, next )=> {
+  try {
+    //@ts-ignore
+    let userId = req.user.id    
+    const querySnapshot = await db.collection("mushrooms").get();
+    
+    //@ts-ignore
 
-//   let img = req.files.image;
-//   try {
-//     let imgName = uuidv4();
-//     let imgId = uuidv4();
-//     let { id } = req.params;
-//     // let { title, description } = req.body;
-//     let fileUpload = bucket.file(imgName);
-//     const blobStream = fileUpload.createWriteStream({
-//       metadata: {
-//         //@ts-ignore
-//         contentType: img.mimetype,
-//       },
-//     });
+    //@ts-ignore
+    // bucket.getSignedUrl(urlOptions, function (err, url){
 
-//     blobStream.on("error", (error) => {
-//       console.log("Something is wrong! Unable to upload at the moment.");
-//     });
+    //   console.log(url);
+      
 
-//     blobStream.on("finish", () => {
-//       console.log("Finished");
-//     });
-//     //@ts-ignore
-//     blobStream.end(img.data);
+    // })
+    // const imageUrl = bucket.get
+    // if (!querySnapshot.data()) {
+    //   throw new UserNotFound();
+    // }
+    const mushrooms = querySnapshot.docs.filter( doc => doc.data().userId === userId)
 
-//     const response = await db
-//       .collection("mushrooms")
-//       .doc(title)
-//       .set({
-//         id: imgId,
-//         userId: id,
-//         // title: title,
-//         // description: description,
-//         images: [imgName], // images: [...images, newImg]
-//       });
-//     console.log(response);
+    // console.log(mushrooms);
+    let urls = []
 
-//     res.json({ message: "mushroom successfully created!" });
-//   } catch (error) {
-//     next(error);
-//   }
+    for (const file of mushrooms) {
+    //@ts-ignore
+      let id = file._fieldsProto.images.arrayValue.values[0].stringValue
+      //@ts-ignore
+      const [url] = await bucket.file(id).getSignedUrl(urlOptions);
+      //@ts-ignore
+      file._fieldsProto.images.arrayValue.values[0].urlValue = url
+      // console.log(url)
+      urls.push(url)
+    }
 
-// }
+      
+
+    console.log(urls)
+    // const [url] = await bucket.file("2f389ed6-b266-4347-a436-01be990adec8").getSignedUrl(urlOptions);
+    // console.log(url)
+
+    res.json({ mushrooms });
+  } catch (error) {
+    next(error);
+  }
+};
+
