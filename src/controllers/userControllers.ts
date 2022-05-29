@@ -11,10 +11,7 @@ import {
   createTemporaryPassword,
   actionCodeSettings,
 } from "../utils";
-
 import { v4 as uuidv4 } from "uuid";
-import { url } from "inspector";
-
 
 // export const getUser: RequestHandler = async (req, res) => {
 //   const { email } = req.body;
@@ -82,9 +79,9 @@ export const registerUser: RequestHandler = async (req, res) => {
       // .then((link) => {
       //   // using custom SMTP server.
       //   transporter.sendMail({
-      //     from: '"24Gossip" <info@24Gossip.se>',
+      //     from: '"Enoki" <info@enoki.se>',
       //     to: email,
-      //     subject: "Bekräfta din e-postadress till 24 Gossip!",
+      //     subject: "Bekräfta din e-postadress till Enoki!",
       //     html: verificationEmail(link),
       //   });
       // });
@@ -126,11 +123,10 @@ export const signInWithLink: RequestHandler = async (req, res, next) => {
 
     await authenticate.generateSignInWithEmailLink(email, actionCodeSettings);
     // .then((link) => {
-    //   // using custom SMTP server.
     //   transporter.sendMail({
-    //     from: '"24Gossip" <info@24Gossip.se>',
+    //     from: '"Enoki" <info@enoki.se>',
     //     to: email,
-    //     subject: "Bekräfta din e-postadress till 24 Gossip!",
+    //     subject: "Bekräfta din e-postadress till Enoki!",
     //     html: verificationEmail(link),
     //   });
     // });
@@ -214,16 +210,18 @@ export const deleteUser: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const addTitleAndDescription: RequestHandler = async ( req, res, next ) => {
-
+export const addTitleAndDescription: RequestHandler = async (
+  req,
+  res,
+  next
+) => {
   let img = req.files.image;
   //@ts-ignore
-  const userId = req.user.id
+  const userId = req.user.id;
 
   try {
     let imgName = uuidv4();
     let imgId = uuidv4();
-    // let { id } = req.params;
     let { title, description } = req.body;
     let fileUpload = bucket.file(imgName);
     const blobStream = fileUpload.createWriteStream({
@@ -243,8 +241,6 @@ export const addTitleAndDescription: RequestHandler = async ( req, res, next ) =
     //@ts-ignore
     blobStream.end(img.data);
 
-    // console.log("Writing to mushroom collection")
-    // console.log(title,description, )
     const response = await db
       .collection("mushrooms")
       .doc(title)
@@ -253,7 +249,7 @@ export const addTitleAndDescription: RequestHandler = async ( req, res, next ) =
         userId: userId,
         title: title,
         description: description,
-        images: [imgName], // images: [...images, newImg]
+        images: [imgName],
       });
     //@ts-ignore
     console.log(response.data);
@@ -264,83 +260,56 @@ export const addTitleAndDescription: RequestHandler = async ( req, res, next ) =
   }
 };
 
-export const getMushrooms: RequestHandler =async (req, res, next) => {
-  console.log(req);
-  
-  console.log("holi");
+// export const getMushrooms: RequestHandler =async (req, res, next) => {
 
-  try {
-    //@ts-ignore
-    let userId = req.user.id
+//   try {
+//     //@ts-ignore
+//     let userId = req.user.id
+//     const querySnapshot = await db
+//       .collection("mushrooms").get();
+//     // if (!querySnapshot.data()) {
+//     //   throw new UserNotFound();
+//     // }
 
-    // console.log(userId);
-    
-    const querySnapshot = await db
-      .collection("mushrooms").get();
-    // if (!querySnapshot.data()) {
-    //   throw new UserNotFound();
-    // }
+//     res.json({ mushrooms: querySnapshot});
 
-    // console.log(querySnapshot);
-    
-    res.json({ mushrooms: querySnapshot});
-
-  } catch (error) {
-    next(error);
-  }
-}
+//   } catch (error) {
+//     next(error);
+//   }
+// }
 
 export const getUserImages: RequestHandler = async (req, res, next) => {
-  // const config = {
-  //   action: 'read',
-  //   expires: '03-17-2025'
-  // };
-
   const urlOptions = {
     version: "v4",
     action: "read",
-    expires: Date.now() + 1000 * 60 * 2, // 2 minutes
-  }
+    expires: Date.now() + 1000 * 60 * 2,
+  };
 
   try {
     //@ts-ignore
-    let userId = req.user.id    
+    let userId = req.user.id;
     const querySnapshot = await db.collection("mushrooms").get();
-    
-    //@ts-ignore
 
-    //@ts-ignore
-    // bucket.getSignedUrl(urlOptions, function (err, url){
-
-    //   console.log(url);
-      
-
-    // })
     // const imageUrl = bucket.get
     // if (!querySnapshot.data()) {
     //   throw new UserNotFound();
     // }
-    const mushrooms = querySnapshot.docs.filter( doc => doc.data().userId === userId)
-
-    // console.log(mushrooms);
-    let urls = []
+    const mushrooms = querySnapshot.docs.filter(
+      (doc) => doc.data().userId === userId
+    );
+    let urls = [];
 
     for (const file of mushrooms) {
-    //@ts-ignore
-      let id = file._fieldsProto.images.arrayValue.values[0].stringValue
+      //@ts-ignore
+      let id = file._fieldsProto.images.arrayValue.values[0].stringValue;
       //@ts-ignore
       const [url] = await bucket.file(id).getSignedUrl(urlOptions);
       //@ts-ignore
-      file._fieldsProto.images.arrayValue.values[0].urlValue = url
-      // console.log(url)
-      urls.push(url)
+      file._fieldsProto.images.arrayValue.values[0].urlValue = url;
+      urls.push(url);
     }
 
-      
-
-    console.log(urls)
-    // const [url] = await bucket.file("2f389ed6-b266-4347-a436-01be990adec8").getSignedUrl(urlOptions);
-    // console.log(url)
+    // console.log(urls)
 
     res.json({ mushrooms });
   } catch (error) {
@@ -348,3 +317,14 @@ export const getUserImages: RequestHandler = async (req, res, next) => {
   }
 };
 
+export const getRandomMushrooms: RequestHandler = async (req, res, next) => {
+  try {
+    //@ts-ignore
+    if (req.user.id) {
+      const querySnapshot = await db.collection("mushroomsData").get();
+      res.json({ mushrooms: querySnapshot.docs });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
