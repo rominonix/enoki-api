@@ -297,6 +297,7 @@ export const getUserImages: RequestHandler = async (req, res, next) => {
     const mushrooms = querySnapshot.docs.filter(
       (doc) => doc.data().userId === userId
     );
+    
     let urls = [];
 
     for (const file of mushrooms) {
@@ -318,11 +319,31 @@ export const getUserImages: RequestHandler = async (req, res, next) => {
 };
 
 export const getRandomMushrooms: RequestHandler = async (req, res, next) => {
+
+  const urlOptions = {
+    version: "v4",
+    action: "read",
+    expires: Date.now() + 1000 * 60 * 2,
+  };
+
   try {
     //@ts-ignore
     if (req.user.id) {
       const querySnapshot = await db.collection("mushroomsData").get();
-      res.json({ mushrooms: querySnapshot.docs });
+      let maxNr = querySnapshot.docs.length
+
+      let randNr = Math.floor(Math.random() * (maxNr + 1));
+      let randomSvamp = querySnapshot.docs[randNr]
+      
+      let svampImageId = randomSvamp["_fieldsProto"]["image"]["stringValue"]
+      //@ts-ignore
+      const [url] = await bucket.file(svampImageId).getSignedUrl(urlOptions);
+      console.log(url)
+      // res.json({ mushrooms: querySnapshot.docs });
+      //@ts-ignore
+      randomSvamp.firebaseUrl = url
+      res.json(randomSvamp);
+
     }
   } catch (error) {
     next(error);
